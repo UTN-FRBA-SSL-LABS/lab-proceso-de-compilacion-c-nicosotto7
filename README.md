@@ -806,13 +806,27 @@ Salida esperada (simplificada):
 
 **P10.** Ejecutá `nm programa.o` y copiá la salida completa.
 
-> **R:**
+> **R:**00000000 b .bss
+00000000 d .data
+00000000 r .eh_frame
+00000000 r .rdata
+00000000 r .rdata$zzz
+00000000 t .text
+         U ___main
+         U _area_circulo
+         U _factorial
+00000132 T _imprimir_separador
+00000000 B _llamadas
+0000001a T _main
+         U _printf
+         U _puts
+00000000 T _sumar
 
 ¿Con qué letra aparece `area_circulo` en esa tabla?
 Escribí solo la letra (una mayúscula):
 
 <!-- Completá con la letra exacta que muestra nm (U, T, D, etc.): -->
-TIPO_AREA_EN_O=
+TIPO_AREA_EN_O=U
 
 ---
 
@@ -832,13 +846,13 @@ nm matematica.o
 **P11.** ¿Por qué `area_circulo` tiene ese tipo en `programa.o`
 pero tipo `T` en `matematica.o`?
 
-> **R:**
+> **R:**Aparece como U en programa.o porque la función es llamada desde ese archivo, pero su código real no está escrito ahí, por lo que su ubicación es desconocida en esta etapa. En cambio, aparece como T en matematica.o porque es en ese archivo donde la función está verdaderamente implementada, y la letra T indica que su código binario ya reside en la sección de texto de ese archivo objeto.
 
 ¿Qué etapa del proceso de compilación resuelve esa diferencia?
 Respondé con una palabra: PREPROCESAMIENTO, COMPILACION, ENSAMBLADO o ENLAZADO:
 
 <!-- Completá con una de las cuatro opciones: -->
-ETAPA_QUE_RESUELVE=
+ETAPA_QUE_RESUELVE=ENLAZADO
 
 ---
 
@@ -857,13 +871,13 @@ Un `.o` no es ejecutable por dos razones:
 
 **P12.** Intentá ejecutar `./programa.o` directamente. ¿Qué mensaje aparece?
 
-> **R:**
+> **R:**bash: ./programa.o: cannot execute binary file: Exec format error
 
 ¿Se puede ejecutar un archivo `.o` directamente?
 Respondé SI o NO:
 
 <!-- Completá con SI o NO: -->
-EJECUTABLE_O=
+EJECUTABLE_O=NO
 
 ---
 
@@ -952,13 +966,13 @@ nm programa | grep area_circulo
 **P13.** Enlazá con `gcc programa.o matematica.o -o programa`.
 Ejecutá `nm programa | grep "area_circulo"` y copiá la salida.
 
-> **R:**
+> **R:**004015a8 T _area_circulo
 
 ¿Con qué letra aparece ahora `area_circulo` en el ejecutable final?
 Escribí solo la letra:
 
 <!-- Completá con la letra exacta que muestra nm: -->
-TIPO_AREA_ENLAZADO=
+TIPO_AREA_ENLAZADO=T
 
 ---
 
@@ -974,17 +988,19 @@ Quedan algunos `U` incluso en el ejecutable final. ¿Por qué? Son funciones de 
 
 **P14.** Ejecutá `nm programa | grep "^ *U"` y copiá la salida.
 
-> **R:**
+> **R:** U ___deregister_frame_info
+         U ___register_frame_info
+         U __Jv_RegisterClasses
 
 ¿Quedan símbolos de tipo `U` en el ejecutable final?
 Respondé SI o NO:
 
 <!-- Completá con SI o NO: -->
-SIMBOLOS_U_FINAL=
+SIMBOLOS_U_FINAL=SI
 
 ¿Por qué quedan? ¿Quién los resuelve y cuándo?
 
-> **R:**
+> **R:**Quedan símbolos indefinidos porque pertenecen a funciones de las bibliotecas dinámicas del sistema. Como son dinámicas, el enlazador no copia todo su código adentro de nuestro .exe. En su lugar, deja anotada la referencia, y es el cargador dinámico del sistema operativo quien se encarga de buscarlas y resolverlas en la memoria RAM en tiempo de ejecución, justo en el momento en que hacemos doble clic o lanzamos el programa.
 
 ---
 
@@ -998,12 +1014,27 @@ SIMBOLOS_U_FINAL=
 
 **P15.** Ejecutá `./programa` y copiá la salida completa.
 
-> **R:**
+> **R:**=== Laboratorio de Compilacion en C (v1.0) ===
+
+sumar(3, 4)       = 7
+CUADRADO(5)      = 25
+MAX(7, 12)        = 12
+----------------------------------------
+area_circulo(5.0) = 78.5398
+Factoriales:
+  0! = 1
+  1! = 1
+  2! = 2
+  3! = 6
+  4! = 24
+  5! = 120
+----------------------------------------
+Llamadas a sumar(): 1
 
 ¿Qué valor da `factorial(5)`? Escribí solo el número:
 
 <!-- Completá con el número exacto: -->
-FACTORIAL_5=
+FACTORIAL_5=120
 
 ---
 
@@ -1015,14 +1046,14 @@ FACTORIAL_5=
 como `CUADRADO(x)` y una **función real** como `sumar(a, b)`.
 ¿En qué etapa "desaparece" cada una? ¿Cuál tiene verificación de tipos?
 
-> **R:**
+> **R:**La diferencia principal es cómo y cuándo se procesan. Una macro función es un simple reemplazo de texto que hace el preprocesador en la Etapa 1, por lo que desaparece antes de que el código se compile, y no tiene verificación de tipos. En cambio, una función real es analizada y traducida por el compilador en la Etapa 2, genera un bloque de código en memoria, y sí tiene verificación de tipos estricta durante el análisis semántico.
 
 ---
 
 **P17.** ¿Qué diferencia hay entre un símbolo de tipo `T` y uno de tipo `D`
 en la salida de `nm`? ¿En qué sección del archivo objeto vive cada uno?
 
-> **R:**
+> **R:**La letra T indica que el símbolo es código ejecutable y vive en la sección .text del archivo binario. La letra D indica que es una variable global o estática que ya tiene un valor inicial asignado y vive en la sección .data del archivo.
 
 ---
 
@@ -1033,7 +1064,7 @@ y copiá la salida.
 
 ¿Por qué `libc` no hubo que especificarla explícitamente al enlazar con `gcc`?
 
-> **R:**
+> **R:**Porque cuando usamos gcc para enlazar, en realidad estamos usando un programa driver que llama al enlazador real. Este driver de GCC está configurado para agregar automáticamente la biblioteca estándar de C a la lista de cosas por enlazar, ya que el 99% de los programas en C la necesitan obligatoriamente para funciones básicas como printf o para el código de inicio y fin del proceso.
 
 ---
 
