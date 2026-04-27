@@ -389,7 +389,7 @@ grep "Archivo fuente principal" programa.i   # no debe encontrar nada
 ¿El comando encuentra algo o no devuelve nada?
 
 <!-- Completá con SI (si encontró algo) o NO (si no encontró nada): -->
-COMENTARIOS_EN_I=NADA
+COMENTARIOS_EN_I=NO
 
 ¿Por qué ocurre eso?
 
